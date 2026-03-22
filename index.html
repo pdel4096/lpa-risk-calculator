@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lp(a) Risk">
+<title>Lp(a) Relative Risk Calculator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    background: #f2f2f7;
+    color: #1c1c1e;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px 40px;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+    margin: 16px 0 4px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #8e8e93;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px 20px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    margin-bottom: 16px;
+  }
+  label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #3a3a3c;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  input[type="number"] {
+    flex: 1;
+    font-size: 28px;
+    font-weight: 600;
+    padding: 12px 16px;
+    border: 2px solid #d1d1d6;
+    border-radius: 12px;
+    outline: none;
+    -webkit-appearance: none;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  input[type="number"]:focus {
+    border-color: #007aff;
+  }
+  .unit {
+    font-size: 16px;
+    color: #8e8e93;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  button {
+    width: 100%;
+    max-width: 400px;
+    padding: 16px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #fff;
+    background: #007aff;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.2s;
+    margin-bottom: 16px;
+  }
+  button:active {
+    background: #0062cc;
+  }
+
+  /* Result area */
+  .result-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 20px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    text-align: center;
+    display: none;
+  }
+  .result-card.visible { display: block; }
+
+  .rr-number {
+    font-size: 56px;
+    font-weight: 800;
+    color: #ff3b30;
+    line-height: 1.1;
+    margin: 8px 0;
+    letter-spacing: -1px;
+  }
+  .rr-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #8e8e93;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .result-text {
+    font-size: 15px;
+    color: #3a3a3c;
+    line-height: 1.5;
+    margin-top: 16px;
+    text-align: left;
+    padding: 16px;
+    background: #f2f2f7;
+    border-radius: 12px;
+  }
+
+  .interpretation {
+    margin-top: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    line-height: 1.4;
+  }
+  .interp-normal { background: #e8f5e9; color: #2e7d32; }
+  .interp-elevated { background: #fff3e0; color: #e65100; }
+  .interp-high { background: #ffebee; color: #c62828; }
+  .interp-very-high { background: #f3e5f5; color: #6a1b9a; }
+
+  .citation {
+    font-size: 11px;
+    color: #aeaeb2;
+    text-align: center;
+    margin-top: 24px;
+    line-height: 1.4;
+    max-width: 400px;
+  }
+  .citation a { color: #aeaeb2; }
+
+</style>
+</head>
+<body>
+
+<h1>Lp(a) Relative Risk</h1>
+<p class="subtitle">Based on 2026 ACC/AHA Dyslipidemia Guideline</p>
+
+<div class="card">
+  <label for="lpa">Lp(a) Concentration</label>
+  <div class="input-row">
+    <input type="text" id="lpa" inputmode="decimal" placeholder="125" autocomplete="off">
+    <span class="unit">nmol/L</span>
+  </div>
+</div>
+
+<button onclick="calculate()">Calculate Risk</button>
+
+<div class="result-card" id="resultCard">
+  <div class="rr-label">Relative Risk</div>
+  <div class="rr-number" id="rrNumber"></div>
+  <div class="result-text" id="resultText"></div>
+  <div class="interpretation" id="interpretation"></div>
+</div>
+
+<p class="citation">
+  Data: <a href="https://doi.org/10.1016/j.jacc.2025.11.016" target="_blank">2026 ACC/AHA/AACVPR/ABC/ACPM/ADA/AGS/APhA/ASPC/NLA/PCNA<br>
+  Guideline on the Management of Dyslipidemia</a>, Table&nbsp;4.<br>
+  UK Biobank; relative risk vs. population median (20&nbsp;nmol/L).
+</p>
+
+<p style="font-size: 12px; color: #c7c7cc; text-align: center; margin-top: 12px;">by Paul A Delaney MD</p>
+
+<script>
+function calculateRR(lpa) {
+  // Piecewise linear interpolation from 2026 ACC/AHA Table 4
+  // Breakpoints: 20→1.0, 75→1.0, 125→1.2, 250→2.0, 350→3.0, 430→4.0
+  if (lpa <= 20) return 1.0;
+  if (lpa <= 75) return 1.0;  // Below elevated threshold
+  if (lpa <= 125) return (lpa - 75) * 0.004 + 1.0;
+  if (lpa <= 250) return (lpa - 125) * 0.0064 + 1.2;
+  if (lpa <= 350) return (lpa - 250) * 0.01 + 2.0;
+  // Cap at 430 (max guideline data)
+  return (Math.min(lpa, 430) - 350) * 0.0125 + 3.0;
+}
+
+function calculate() {
+  var input = document.getElementById('lpa');
+  var lpa = parseFloat(input.value);
+  if (isNaN(lpa) || lpa < 0) {
+    input.focus();
+    return;
+  }
+
+  var rr = calculateRR(lpa);
+  rr = Math.round(rr * 100) / 100;
+
+  // Display
+  var capped = lpa > 430;
+  document.getElementById('rrNumber').textContent = rr.toFixed(2) + '\u00d7';
+  document.getElementById('resultText').textContent =
+    'An Lp(a) of ' + Math.round(lpa) + ' nmol/L confers an additional relative risk of ' +
+    rr.toFixed(2) + '\u00d7 for cardiovascular risk factors.' +
+    (capped ? ' (Capped at 430 nmol/L per guideline data.)' : '') +
+    ' Consider multiplying this by the PREVENT\u2011ASCVD score for a more complete picture.';
+
+  // Interpretation band
+  var interp = document.getElementById('interpretation');
+  if (lpa < 75) {
+    interp.className = 'interpretation interp-normal';
+    interp.textContent = 'Normal range (\u003c75 nmol/L). No additional Lp(a)-attributable risk.';
+  } else if (lpa < 125) {
+    interp.className = 'interpretation interp-elevated';
+    interp.textContent = 'Borderline elevated (75\u2013124 nmol/L). Modest additional risk; lifestyle optimization recommended.';
+  } else if (lpa < 250) {
+    interp.className = 'interpretation interp-high';
+    interp.textContent = 'Elevated (\u2265125 nmol/L). Intensify modifiable risk factor management per ACC/AHA COR 1.';
+  } else {
+    interp.className = 'interpretation interp-very-high';
+    interp.textContent = 'Significantly elevated (\u2265250 nmol/L). Risk approaches or exceeds that of heterozygous FH. Aggressive risk factor control indicated.';
+  }
+
+  document.getElementById('resultCard').className = 'result-card visible';
+}
+
+var lpaInput = document.getElementById('lpa');
+
+// Allow only: digits, one decimal point, backspace, delete, arrows, tab, enter
+lpaInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') { calculate(); this.blur(); return; }
+
+  // Arrow up/down: adjust by 1
+  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    var val = parseFloat(this.value) || 0;
+    val = e.key === 'ArrowUp' ? val + 1 : Math.max(0, val - 1);
+    this.value = Math.round(val * 10) / 10;
+    return;
+  }
+
+  // Always allow: navigation and editing keys
+  if (['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'].indexOf(e.key) !== -1) return;
+  // Allow select-all, copy, paste, cut
+  if ((e.metaKey || e.ctrlKey) && ['a','c','v','x'].indexOf(e.key) !== -1) return;
+
+  // Allow digits
+  if (e.key >= '0' && e.key <= '9') return;
+
+  // Allow one decimal point
+  if (e.key === '.' && this.value.indexOf('.') === -1) return;
+
+  // Block everything else
+  e.preventDefault();
+});
+
+// Sanitize on paste — strip non-numeric chars except decimal
+lpaInput.addEventListener('paste', function(e) {
+  e.preventDefault();
+  var text = (e.clipboardData || window.clipboardData).getData('text');
+  text = text.replace(/[^0-9.]/g, '');
+  // Keep only first decimal point
+  var parts = text.split('.');
+  if (parts.length > 2) text = parts[0] + '.' + parts.slice(1).join('');
+  this.value = text;
+});
+</script>
+</body>
+</html>
